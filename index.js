@@ -68,19 +68,19 @@ const approveABI = [{
 
     // Approve tokens for spending.
     // If you need to approve the tokens before posting an order, this code can be uncommented for first run.
-    const provider = new JsonRpcProvider(nodeUrl);
-    const tkn = new Contract(srcTokenAddress, approveABI, new Wallet(makerPrivateKey, provider));
-    await tkn.approve(
-        '0x111111125421ca6dc452d289314280a0f8842a65', // aggregation router v6
-        (2n**256n - 1n) // unlimited allowance
-    );
+    // const provider = new JsonRpcProvider(nodeUrl);
+    // const tkn = new Contract(srcTokenAddress, approveABI, new Wallet(makerPrivateKey, provider));
+    // await tkn.approve(
+    //     '0x111111125421ca6dc452d289314280a0f8842a65', // aggregation router v6
+    //     (2n**256n - 1n) // unlimited allowance
+    // );
 
     const params = {
         srcChainId,
         dstChainId,
         srcTokenAddress,
         dstTokenAddress,
-        amount: '1000000',
+        amount: '1000000000000000000', // Adjust this to the correct decimal precision of the source token
         enableEstimate: true,
         walletAddress: makerAddress
     };
