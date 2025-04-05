@@ -15,7 +15,7 @@ function getRandomBytes32() {
 
 const makerPrivateKey = process?.WALLET_KEY;
 const makerAddress = process?.WALLET_ADDRESS;
-const nodeUrl = process?.RPC_URL_ETHEREUM; // suggested for ethereum https://eth.llamarpc.com
+const nodeUrl = process?.RPC_URL; // suggested for ethereum https://eth.llamarpc.com
 const devPortalApiKey = process?.DEV_PORTAL_KEY;
 
 // Validate environment variables
@@ -51,14 +51,7 @@ const approveABI = [{
 }];
 
 (async () => {
-    // Approve tokens for spending.
-    // If you need to approve the tokens before posting an order, this code can be uncommented for first run.
-    // const provider = new JsonRpcProvider(nodeUrl);
-    // const tkn = new Contract(srcTokenAddress, approveABI, new Wallet(makerPrivateKey, provider));
-    // await tkn.approve(
-    //     '0x111111125421ca6dc452d289314280a0f8842a65', // aggregation router v6
-    //     (2n**256n - 1n) // unlimited allowance
-    // );
+
 
     const invert = false;
 
@@ -71,6 +64,16 @@ const approveABI = [{
         srcTokenAddress = dstTokenAddress;
         dstTokenAddress = tempAddress;
     }
+
+
+    // Approve tokens for spending.
+    // If you need to approve the tokens before posting an order, this code can be uncommented for first run.
+    const provider = new JsonRpcProvider(nodeUrl);
+    const tkn = new Contract(srcTokenAddress, approveABI, new Wallet(makerPrivateKey, provider));
+    await tkn.approve(
+        '0x111111125421ca6dc452d289314280a0f8842a65', // aggregation router v6
+        (2n**256n - 1n) // unlimited allowance
+    );
 
     const params = {
         srcChainId,
