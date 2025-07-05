@@ -34,8 +34,8 @@ const sdk = new SDK({
 
 let srcChainId = NetworkEnum.ARBITRUM;
 let dstChainId = NetworkEnum.COINBASE;
-let srcTokenAddress = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
-let dstTokenAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+let srcTokenAddress = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+let dstTokenAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
 
 const approveABI = [{
     "constant": false,
@@ -68,22 +68,24 @@ const approveABI = [{
 
     // Approve tokens for spending.
     // If you need to approve the tokens before posting an order, this code can be uncommented for first run.
-    // const provider = new JsonRpcProvider(nodeUrl);
-    // const tkn = new Contract(srcTokenAddress, approveABI, new Wallet(makerPrivateKey, provider));
-    // await tkn.approve(
-    //     '0x111111125421ca6dc452d289314280a0f8842a65', // aggregation router v6
-    //     (2n**256n - 1n) // unlimited allowance
-    // );
+    const provider = new JsonRpcProvider(nodeUrl);
+    const tkn = new Contract(srcTokenAddress, approveABI, new Wallet(makerPrivateKey, provider));
+    await tkn.approve(
+        '0x111111125421ca6dc452d289314280a0f8842a65', // aggregation router v6
+        (2n**256n - 1n) // unlimited allowance
+    );
 
     const params = {
         srcChainId,
         dstChainId,
         srcTokenAddress,
         dstTokenAddress,
-        amount: '1000000000000000000', // Adjust this to the correct decimal precision of the source token
+        amount: '100000', // Adjust this to the correct decimal precision of the source token
         enableEstimate: true,
         walletAddress: makerAddress
     };
+    
+    console.log(`Requesting Fusion+ quote with params: ${JSON.stringify(params, null, 2)}`);
 
     sdk.getQuote(params).then(quote => {
         const secretsCount = quote.getPreset().secretsCount;
@@ -121,6 +123,7 @@ const approveABI = [{
                     }
                 ).catch(error =>
                     console.error(`Error: ${JSON.stringify(error, null, 2)}`)
+                    // console.log(`error`)
                 );
 
                 sdk.getReadyToAcceptSecretFills(orderHash)
@@ -132,7 +135,8 @@ const approveABI = [{
                                         console.log(`Fill order found! Secret submitted: ${JSON.stringify(secretHashes[fill.idx], null, 2)}`);
                                     })
                                     .catch((error) => {
-                                        console.error(`Error submitting secret: ${JSON.stringify(error, null, 2)}`);
+                                        // console.error(`Error submitting secret: ${JSON.stringify(error, null, 2)}`);
+                                        console.log(`error`)
                                     });
                             });
                         }
@@ -152,15 +156,19 @@ const approveABI = [{
                         } else {
                             // Something happened in setting up the request that triggered an Error
                             console.error('Error', error.message);
+                            // console.log(`error`)
                         }
                     });
             }, 5000);
         }).catch((error) => {
             console.dir(error, { depth: null });
+            // console.log(`error`)
         });
     }).catch((error) => {
         console.dir(error, { depth: null });
+        // console.log(`error`)
     });
 })().catch(error => {
     console.error("Error in main execution:", error);
+    // console.log(`error`)
 });
