@@ -1,0 +1,117 @@
+import {Interface, Signature, TransactionRequest} from 'ethers'
+import Sdk from '@1inch/cross-chain-sdk'
+import Contract from '../dist/contracts/Resolver.sol/Resolver.json'
+import Contract2 from '../dist/contracts/IOrderMixin.sol/IOrderMixin.json'
+
+export class Resolver {
+    private readonly iface = new Interface(Contract.abi)
+    private readonly lopIface = new Interface(Contract2.abi)
+
+    constructor(
+        public readonly srcAddress: string,
+        public readonly dstAddress: string
+    ) {}
+
+    public ping(): TransactionRequest {
+        return {
+            to: this.srcAddress,
+            data: this.iface.encodeFunctionData("ping")
+        };
+    }
+
+    // public fillOrderArgs(
+    //     chainId: number,
+    //     order: Sdk.CrossChainOrder,
+    //     signature: string,
+    //     takerTraits: Sdk.TakerTraits,
+    //     amount: bigint,
+    //     hashLock = order.escrowExtension.hashLockInfo
+    // ): TransactionRequest {
+    //     const {r, yParityAndS: vs} = Signature.from(signature)
+    //     const {args, trait} = takerTraits.encode()
+    //     const immutables = order.toSrcImmutables(chainId, new Sdk.Address(this.srcAddress), amount, hashLock)
+
+        
+    //     return {
+    //         to: this.srcAddress,
+    //         data: this.iface.encodeFunctionData('deploySrc', [
+    //             immutables.build(),
+    //             order.build(),
+    //             r,
+    //             vs,
+    //             amount,
+    //             trait,
+    //             args
+    //         ]),
+    //         value: order.escrowExtension.srcSafetyDeposit
+    //     }
+    // }
+
+    public deploySrc(
+        chainId: number,
+        order: Sdk.CrossChainOrder,
+        signature: string,
+        takerTraits: Sdk.TakerTraits,
+        amount: bigint,
+        hashLock = order.escrowExtension.hashLockInfo
+    ): TransactionRequest {
+        const {r, yParityAndS: vs} = Signature.from(signature)
+        const {args, trait} = takerTraits.encode()
+        const immutables = order.toSrcImmutables(chainId, new Sdk.Address(this.srcAddress), amount, hashLock)
+
+        console.log("order", order);
+        console.log("immutables", immutables);
+
+        console.log("rvs", r, vs);
+        console.log(order.escrowExtension.srcSafetyDeposit, order.escrowExtension.dstSafetyDeposit);
+        console.log(args, trait)
+        return {
+            to: this.srcAddress,
+            data: this.iface.encodeFunctionData('deploySrc', [
+                immutables.build(),
+                order.build(),
+                r,
+                vs,
+                amount,
+                trait,
+                args
+            ]),
+            value: order.escrowExtension.srcSafetyDeposit
+        }
+    }
+
+    public deployDst(
+        /**
+         * Immutables from SrcEscrowCreated event with complement applied
+         */
+        immutables: Sdk.Immutables
+    ): TransactionRequest {
+        return {
+            to: this.dstAddress,
+            data: this.iface.encodeFunctionData('deployDst', [
+                immutables.build(),
+                immutables.timeLocks.toSrcTimeLocks().privateCancellation
+            ]),
+            value: immutables.safetyDeposit
+        }
+    }
+
+    public withdraw(
+        side: 'src' | 'dst',
+        escrow: Sdk.Address,
+        secret: string,
+        immutables: Sdk.Immutables
+    ): TransactionRequest {
+        return {
+            to: side === 'src' ? this.srcAddress : this.dstAddress,
+            data: this.iface.encodeFunctionData('withdraw', [escrow.toString(), secret, immutables.build()])
+        }
+    }
+
+    public cancel(side: 'src' | 'dst', escrow: Sdk.Address, immutables: Sdk.Immutables): TransactionRequest {
+        return {
+            to: side === 'src' ? this.srcAddress : this.dstAddress,
+            data: this.iface.encodeFunctionData('cancel', [escrow.toString(), immutables.build()])
+        }
+    }
+}
