@@ -25,7 +25,7 @@ async function main() {
     };
 
     const order = {
-        salt: "123456",
+        salt: "1234567",
         maker: "0x1ed17B61CdFa0572e98FF006625258c63255544A",
         receiver: "0x4dDd8F7371Bb05CCa7eEdfF260931586F0c6A0F3",
         makerAsset: "0xCE252C063B7C66417934C85c177AE61Bf0e9858a",
@@ -35,7 +35,7 @@ async function main() {
         makerTraits: "0"
     };
 
-    const privateKey = process.env.MAKER_PRIVATE_KEY;
+    const privateKey = process.env.PRIVATE_KEY;
     if (!privateKey) throw new Error("MAKER_PRIVATE_KEY env var required");
     const wallet = new ethers.Wallet(privateKey);
 

@@ -20,7 +20,7 @@ contract SubmitOrderWithResolver is Script {
         string memory keyStr = vm.envString("PRIVATE_KEY");
         uint256 pk = vm.parseUint(string.concat("0x", keyStr));         
 
-        IResolverExample resolver = IResolverExample(0x3c6580b15A74096c73bb417E3C954c27331a8D4D);
+        IResolverExample resolver = IResolverExample(0xb4654ED26f3bcCc6869E7b94B6Ce5C4aB4F57651);
         IERC20 makerToken = IERC20(0xCE252C063B7C66417934C85c177AE61Bf0e9858a);
         IERC20 takerToken = IERC20(0x61ed92A2Aa23B2E7da92adEA1209eC71f8098e42);
 
@@ -28,7 +28,7 @@ contract SubmitOrderWithResolver is Script {
         uint256 amountTaker = 500e18;
 
         IOrderMixin.Order memory order = IOrderMixin.Order({
-            salt: 123456,
+            salt: 1234567,
             maker: Address.wrap(uint160(0x1ed17B61CdFa0572e98FF006625258c63255544A)),
             receiver: Address.wrap(uint160(0x4dDd8F7371Bb05CCa7eEdfF260931586F0c6A0F3)),
             makerAsset: Address.wrap(uint160(0xCE252C063B7C66417934C85c177AE61Bf0e9858a)),
@@ -39,18 +39,18 @@ contract SubmitOrderWithResolver is Script {
         });
 
         IBaseEscrow.Immutables memory immutables = IBaseEscrow.Immutables({
-            orderHash: 0xe7ef9b96a595d641a1d5c0023066c1dcb13db5fd53563d871d3a80f6ae99456b,
-            hashlock: 0xfaf1d8b0d741f1e944f560a3ed42bca66c8d287f6d69734d60ca81af2cdbb6d6,
+            orderHash: 0x64ed452af8927d44d5225d221e2dfd87abf1285c46c7e4ba6b0227f8368e8e2f,
+            hashlock: 0xfabd55e0f66a49c041a5c54b871bef7fa3c97ef1e76fb53aef5687e9601a8467,
             maker: Address.wrap(uint160(0x1ed17B61CdFa0572e98FF006625258c63255544A)),
             taker: Address.wrap(uint160(0x4dDd8F7371Bb05CCa7eEdfF260931586F0c6A0F3)),
             token: Address.wrap(uint160(0xCE252C063B7C66417934C85c177AE61Bf0e9858a)),
             amount: amount,
             safetyDeposit: 0,
-            timelocks: Timelocks.wrap(300032214234046188315793196318403184640)
+            timelocks: Timelocks.wrap(30003221423404618831579319631840318464042839429834292492)
         });
 
-        bytes32 r = 0x260e67b587c4b831d2f97021bb762936f5d79ec6f6cd986b2570c526ef0c8270;
-        bytes32 vs = 0x574769324b38be9f7562a515311a2194b53399e671b12952bd4130d11cd1759b;
+        bytes32 r = 0xea48eb7f3ebc7a4a852a8364ffea80d70d8ab5e6422c8c350f26471317c1354b;
+        bytes32 vs = 0xe54e230044db0505e21092a2352893da0abdc00818851671b639dc51179ec6a6;
 
         TakerTraits takerTraits = TakerTraits.wrap(0);
         bytes memory args = "";
