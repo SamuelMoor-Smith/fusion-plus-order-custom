@@ -12,6 +12,7 @@
 pragma solidity 0.8.23;
 
 import { Ownable } from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import { IOrderMixin } from "limit-order-protocol/contracts/interfaces/IOrderMixin.sol";
 import { TakerTraits } from "limit-order-protocol/contracts/libraries/TakerTraitsLib.sol";
@@ -21,6 +22,7 @@ import { IBaseEscrow } from "../interfaces/IBaseEscrow.sol";
 import { IEscrowFactory } from "../interfaces/IEscrowFactory.sol";
 import { IResolverExample } from "../interfaces/IResolverExample.sol";
 import { TimelocksLib } from "../libraries/TimelocksLib.sol";
+import {IEscrow} from "../interfaces/IEscrow.sol";
 
 /**
  * @title Sample implementation of a Resolver contract for cross-chain swap.
@@ -30,7 +32,13 @@ import { TimelocksLib } from "../libraries/TimelocksLib.sol";
  *
  * @custom:security-contact security@1inch.io
  */
-contract ResolverExample is IResolverExample, Ownable {
+contract ResolverExample is Ownable {
+    // using ImmutablesLib for IBaseEscrow.Immutables;
+    // using TimelocksLib for Timelocks;
+
+    error InvalidLength();
+    error LengthMismatch();
+
     IEscrowFactory private immutable _FACTORY;
     IOrderMixin private immutable _LOP;
 
@@ -52,13 +60,17 @@ contract ResolverExample is IResolverExample, Ownable {
         uint256 amount,
         TakerTraits takerTraits,
         bytes calldata args
-    ) external onlyOwner {
+    ) external payable onlyOwner {
+
         IBaseEscrow.Immutables memory immutablesMem = immutables;
+        if (msg.value < immutables.safetyDeposit) revert("Insufficient msg.value for safetyDeposit");
         immutablesMem.timelocks = TimelocksLib.setDeployedAt(immutables.timelocks, block.timestamp);
         address computed = _FACTORY.addressOfEscrowSrc(immutablesMem);
-        (bool success,) = address(computed).call{ value: immutablesMem.safetyDeposit }("");
-        if (!success) revert IBaseEscrow.NativeTokenSendingFailure();
+        if (computed == address(0)) revert("Computed escrow address is zero");
 
+        (bool success,) = address(computed).call{value: immutablesMem.safetyDeposit}("");
+        if (!success) revert IBaseEscrow.NativeTokenSendingFailure();
+        
         // _ARGS_HAS_TARGET = 1 << 251
         takerTraits = TakerTraits.wrap(TakerTraits.unwrap(takerTraits) | uint256(1 << 251));
         bytes memory argsMem = abi.encodePacked(computed, args);
@@ -69,7 +81,16 @@ contract ResolverExample is IResolverExample, Ownable {
      * @notice See {IResolverExample-deployDst}.
      */
     function deployDst(IBaseEscrow.Immutables calldata dstImmutables, uint256 srcCancellationTimestamp) external onlyOwner payable {
-        _FACTORY.createDstEscrow{ value: msg.value }(dstImmutables, srcCancellationTimestamp);
+        _FACTORY.createDstEscrow{value: msg.value}(dstImmutables, srcCancellationTimestamp);
+    }
+
+    function withdraw(IEscrow escrow, bytes32 secret, IBaseEscrow.Immutables calldata immutables) external {
+        escrow.withdraw(secret, immutables);
+    }
+
+
+    function cancel(IEscrow escrow, IBaseEscrow.Immutables calldata immutables) external {
+        escrow.cancel(immutables);
     }
 
     /**
@@ -83,5 +104,10 @@ contract ResolverExample is IResolverExample, Ownable {
             (bool success,) = targets[i].call(arguments[i]);
             if (!success) RevertReasonForwarder.reRevert();
         }
+    }
+        /// @notice Approve tokens from this resolver to a spender
+    function approveToken(IERC20 token, address spender, uint256 amount) external onlyOwner {
+        bool success = token.approve(spender, amount);
+        require(success, "Token approval failed");
     }
 }

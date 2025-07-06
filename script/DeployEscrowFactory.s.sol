@@ -11,7 +11,7 @@ interface ICreateX {
 
 contract DeployEscrowFactory is Script {
     uint32 public constant RESCUE_DELAY = 691200; // 8 days
-    bytes32 public constant CROSSCHAIN_SALT = keccak256("1inch111 EscrowFactory");
+    bytes32 public constant CROSSCHAIN_SALT = keccak256("JSAMy EscrowFactory");
     
     address public constant LOP = 0x111111125421cA6dc452d289314280a0f8842A65;
     address public constant ACCESS_TOKEN = 0xACCe550000159e70908C0499a1119D04e7039C28;
@@ -32,6 +32,7 @@ contract DeployEscrowFactory is Script {
         FEE_TOKEN[146] = 0x29219dd400f2Bf60E5a23d13Be72B486D4038894;
         FEE_TOKEN[130] = 0x20CAb320A855b39F724131C69424240519573f81;
         FEE_TOKEN[11155111] = 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238;
+        FEE_TOKEN[10143] = 0xA2a1D3778107f3Cff1FB393CaD2a4b3488C3E3a3;
 
         address deployer = vm.envAddress("DEPLOYER_ADDRESS");
         address feeBankOwner = deployer;

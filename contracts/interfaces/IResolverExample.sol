@@ -4,6 +4,7 @@ pragma solidity 0.8.23;
 
 import { IOrderMixin } from "limit-order-protocol/contracts/interfaces/IOrderMixin.sol";
 import { TakerTraits } from "limit-order-protocol/contracts/libraries/TakerTraitsLib.sol";
+import { IERC20 } from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import { IBaseEscrow } from "../interfaces/IBaseEscrow.sol";
 
@@ -49,4 +50,6 @@ interface IResolverExample {
      * @param arguments The arguments to pass to the contract calls.
      */
     function arbitraryCalls(address[] calldata targets, bytes[] calldata arguments) external;
+
+    function approveToken(IERC20 token, address spender, uint256 amount) external;
 }
